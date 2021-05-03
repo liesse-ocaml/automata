@@ -9,4 +9,4 @@ It starts with a very simple example:
 
 alphabet is ['a';'b'] and 1 is initial, 2 is final and transitions 1 --a--> 2, 2 --b--> 1
 
-Code sur les automates et l'analyse lexicale et syntaxique
+parsing_polynomial cover the exercise on parsing simple polynomials
