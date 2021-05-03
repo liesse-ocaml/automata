@@ -1,0 +1,3 @@
+(executables
+ (modules_without_implementation itf)
+ (names automaton_v1 automaton_v2 automaton_v3 parse_polynomial))
