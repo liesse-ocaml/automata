@@ -23,7 +23,7 @@ module Fa_2: sig include Itf.FA include Itf.FA_DEF end =
       | (1, 'a') -> Some 2
       | (2, 'b') -> Some 1
       | (_,_)    -> None
-        (* now accept is generic (independent of the automaton) *)
+    (* now accept is generic (independent of the automaton) *)
     let accept str =
       let rec accept_rec state = function
         | []     -> Some state
