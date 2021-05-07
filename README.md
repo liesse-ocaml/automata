@@ -10,3 +10,8 @@ It starts with a very simple example:
 alphabet is ['a';'b'] and 1 is initial, 2 is final and transitions 1 --a--> 2, 2 --b--> 1
 
 parsing_polynomial cover the exercise on parsing simple polynomials
+
+the version done live during the session is parsing_polynomial_live, the .txt file
+contains the utop
+
+To build and execute a file: `dune exec ./`*name*`.exe`

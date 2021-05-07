@@ -1,0 +1,164 @@
+utop # let mon_polynome = "2x + 1 - x^3";;
+
+utop # type token;;
+utop # let next_token: string -> token = function s -> failwith "Not yet implemented";;
+
+utop # type polynomial;;
+
+utop # let parse: string -> polynomial = function s -> failwith "Not yet implemented";;
+
+utop # mon_polynome;;
+utop # [#2#;#x#;#+#;#1#;#-#;#x#;#^#;#3#];;
+
+utop # let mon_polynome_2 = "2x + 1.3 - x^32";;
+utop # [#2#;#x#;#+#;#1.3#;#-#;#x#;#^#;#32#];;
+
+utop # type token =
+| Int of int;;
+utop # [Int 2;Int 32];;
+
+utop # type token =
+| Int of int
+| Var;;
+utop # [Int 2;Var;Var;Int 32];;
+
+utop # type token =
+| Int of int
+| Var
+| Add
+| Minus
+| Float of float
+| Caret;;
+utop # [Int 2; Var; Add; Float 1.3; Minus; Var; Caret; Int 32];;
+
+utop # let mon_polynome_3 = "2x$ + 1.€3 - x^32";;
+utop # type token =
+| Int of int
+| Var
+| Add
+| Minus
+| Float of float
+| Caret
+| LexError of char;;
+
+utop # let mon_polynome_4 = "";;
+utop # type token =
+| Int of int
+| Var
+| Add
+| Minus
+| Float of float
+| Caret
+| LexError of char
+| EndOfInput;;
+utop # [Int 2; Var; Add; Float 1.3; Minus; Var; Caret; Int 32; EndOfInput];;
+
+
+utop # next_token mon_polynome_2;;
+utop # next_token;;
+- : string -> token/2 = <fun>
+
+utop # let next_token: char list -> token * char list = function s -> failwith "Not yet implemented";;
+utop # let first_result = (Int 2, ['x';' ';'+';' ';'1';'.';'3';' ';'-';' ';'x';'^';'3';'2']);;
+
+utop # let explode s =
+    let rec exp i l =
+      if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+    exp (String.length s - 1) [];;
+utop # let test_1 () = (next_token (explode mon_polynome_2)) = first_result;;
+
+utop # test_1 ();;
+Exception: Failure "Not yet implemented".
+
+utop # let rec next_token = function
+| [] -> EndOfInput, []
+| ' '::t -> next_token t
+| ('0'..'9' as c)::t -> read_int (String.make 1 c) t
+| c::t -> LexError c, t
+and read_int str = function
+| ('0'..'9' as c)::t -> read_int (str^(String.make 1 c)) t
+| '.'::t -> read_float (str^".") t
+| l -> Int (int_of_string str),l
+and read_float str = function
+| ('0'..'9' as c)::t -> read_float (str^(String.make 1 c)) t
+| l -> Float (float_of_string str),l
+;;
+
+utop # let test_1 () = (next_token (explode mon_polynome_2)) = first_result;;
+utop # test_1 ();;
+- : bool = true
+
+utop # let t,r = next_token (explode mon_polynome_2);;
+utop # next_token r;;
+
+utop # let rec next_token = function
+| [] -> EndOfInput, []
+| ' '::t -> next_token t
+| ('0'..'9' as c)::t -> read_int (String.make 1 c) t
+| '.'::t -> read_float "." t
+| ('x' | 'X')::t -> Var, t
+| '+'::t -> Add, t
+| '-'::t -> Minus, t
+| '^'::t -> Caret, t
+| c::t -> LexError c, t
+and read_int str = function
+| ('0'..'9' as c)::t -> read_int (str^(String.make 1 c)) t
+| '.'::t -> read_float (str^".") t
+| l -> Int (int_of_string str),l
+and read_float str = function
+| ('0'..'9' as c)::t -> read_float (str^(String.make 1 c)) t
+| l -> Float (float_of_string str),l
+;;
+
+utop # mon_polynome_2;;
+- : string = "2x + 1.3 - x^32"
+utop # exception ParseException;;
+utop # let parse_o input =
+  match next_token input with
+  | (Add | Minus), rest -> rest
+  | _,_ -> raise ParseException;;
+utop # let parse_n input =
+  match next_token input with
+  | (Int _ | Float _), rest -> rest
+  | _,_ -> raise ParseException;;
+utop # let parse_int input =
+  match next_token input with
+  | Int _, rest -> rest
+ | _,_ -> raise ParseException;;
+utop # let parse_m input =
+  match next_token input with
+  | Var, rest ->
+    begin
+      match next_token input with
+      | Caret, rest -> parse_int rest
+      | LexError _, _ -> raise ParseException
+      | _, _ -> rest
+    end
+  | (Int _ | Float _), _ -> parse_n input;
+  | _, _ -> raise ParseException;;
+utop # let parse_v input =
+match next_token input with
+  | Var, rest ->
+    begin
+      match next_token input with
+      | Caret, rest -> parse_int rest
+      | LexError _, _ -> raise ParseException
+      | _, _ -> rest
+    end
+  | _, _ -> raise ParseException;;
+utop # let parse_m input =
+  match next_token input with
+  | Var, _ -> parse_v input
+  | (Int _ | Float _), _ -> let rest = parse_n input in parse_v rest
+  | _, _ -> raise ParseException;;
+
+utop # let rec parse_s input =
+  try
+    (match next_token (parse_m input) with
+  | (Add | Minus), rest -> parse_s rest
+  | EndOfInput, _ -> true
+  | _, _ -> false)
+  with ParseException -> false
+;;
+utop # parse_s (explode mon_polynome);;
+utop # parse_s (explode mon_polynome_2);;
